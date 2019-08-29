@@ -70,25 +70,31 @@ const prepareRelationshipDeletion = (nodeType, removedRelationships) => {
 	const queryParts = [];
 
 	const schema = getType(nodeType);
-	queryParts.push(
-		...Object.entries(removedRelationships).map(([propName, codes]) => {
+	parameters.deleteRelationships = Object.entries(removedRelationships).map(([propName, codes]) => {
 			const def = schema.properties[propName];
-			const key = `Delete${def.relationship}${def.direction}${def.type}`;
-			parameters[key] = codes;
-			// Must use OPTIONAL MATCH because 'cypher'
-			return stripIndents`
-				WITH node
-					OPTIONAL MATCH (node)${relationshipFragment(
-						def.relationship,
-						def.direction,
-					)}(related:${def.type})
-				WHERE related.code IN $${key}
-				DELETE relationship
-			`;
-		}),
-	);
+			return {
+				relName: def.relationship,
+				direction: def.direction,
+				type: def.type,
+				codes,
+			};
 
-	return { parameters, queryParts };
+		})
+
+
+// call apoc.cypher.mapParallel('call apoc.cypher.run("MATCH (p:" + _.type + ")<-[:"+_.relName+"]-(t {code:$code}) RETURN p, t", _) yield value RETURN value', {}, $bits) yield value
+// RETURN value
+
+	return { parameters, queryParts: [stripIndents`
+				WITH node
+				CALL apoc.cypher.mapParallel(
+				'CALL apoc.when(_.direction = "outgoing",
+					"OPTIONAL MATCH ($node)-[relationship:"+_.relName+"]->(related:"+_.type+") WHERE related.code IN $codes DELETE relationship",
+					"OPTIONAL MATCH ($node)<-[relationship:"+_.relName+"]-(related:"+_.type+") WHERE related.code IN $codes DELETE relationship",
+					{codes: _.codes, node: node}
+				) YIELD value RETURN value'
+				, null, $deleteRelationships) YIELD value
+			`] };
 };
 
 module.exports = {
