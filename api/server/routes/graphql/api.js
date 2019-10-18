@@ -1,49 +1,28 @@
 const bodyParser = require('body-parser');
 const timeout = require('connect-timeout');
-const { formatError } = require('graphql');
-const { graphqlExpress } = require('apollo-server-express');
-const schema = require('../../../../packages/schema-sdk');
 const { logger, setContext } = require('../../lib/request-context');
 const security = require('../../middleware/security');
 const maintenance = require('../../middleware/maintenance');
 const clientId = require('../../middleware/client-id');
 const { TIMEOUT } = require('../../constants');
-const { createSchema } = require('./lib/graphql-schema');
-const { driver } = require('../../lib/db-connection');
+
+const { onChange } = require('../../../../packages/schema-sdk');
 const { sendSchemaToS3 } = require('../../../../packages/schema-publisher');
 
-let api;
 let schemaVersionIsConsistent = true;
+let graphqlAPI;
 
-const constructAPI = () => {
+const { getApolloMiddleware } = require('./lib/get-apollo-middleware');
+
+const updateAPI = () => {
 	try {
-		const newSchema = createSchema();
-		api = graphqlExpress(({ headers }) => ({
-			schema: newSchema,
-			rootValue: {},
-			context: {
-				driver,
-				headers,
-			},
-			formatError(error) {
-				const isS3oError = /Forbidden/i.test(error.message);
-				logger.error('GraphQL Error', {
-					event: 'GRAPHQL_ERROR',
-					error,
-				});
-				const displayedError = isS3oError
-					? new Error(
-							'FT s3o session has expired. Please reauthenticate via s3o - i.e. refresh the page if using the graphiql explorer',
-					  )
-					: error;
-				return formatError(displayedError);
-			},
-		}));
+		graphqlAPI = getApolloMiddleware();
+
 		schemaVersionIsConsistent = true;
 		logger.info({ event: 'GRAPHQL_SCHEMA_UPDATED' });
 
 		if (process.env.NODE_ENV === 'production') {
-			sendSchemaToS3('api', schema.updater.getRawData())
+			sendSchemaToS3('api')
 				.then(() => {
 					logger.info({ event: 'GRAPHQL_SCHEMA_SENT_TO_S3' });
 				})
@@ -63,12 +42,7 @@ const constructAPI = () => {
 	}
 };
 
-const bodyParsers = [
-	bodyParser.json({ limit: '8mb' }),
-	bodyParser.urlencoded({ limit: '8mb', extended: true }),
-];
-
-schema.on('change', constructAPI);
+onChange(updateAPI);
 
 module.exports = router => {
 	router.use(timeout(TIMEOUT));
@@ -78,11 +52,12 @@ module.exports = router => {
 		}
 		next();
 	});
-
 	router.use(security.requireApiKeyOrS3o);
 	router.use(maintenance.disableReads);
-	router.use(bodyParsers);
-
+	router.use([
+		bodyParser.json({ limit: '8mb' }),
+		bodyParser.urlencoded({ limit: '8mb', extended: true }),
+	]);
 	router.use((req, res, next) => {
 		res.nextMetricsName = 'graphql';
 		setContext({ endpoint: 'graphql', method: req.method });
@@ -101,8 +76,8 @@ module.exports = router => {
 	// controller using the latest schema
 	router
 		.route('/')
-		.get((...args) => api(...args))
-		.post((...args) => api(...args));
+		.get((...args) => graphqlAPI(...args))
+		.post((...args) => graphqlAPI(...args));
 
 	return router;
 };
