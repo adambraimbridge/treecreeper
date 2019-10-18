@@ -70,7 +70,7 @@ const prepareRelationshipDeletion = (nodeType, removedRelationships) => {
 	const queryParts = [];
 
 	const schema = getType(nodeType);
-	parameters.deleteRelationships = Object.entries(removedRelationships).map(([propName, codes]) => {
+	const deleteRelationships = Object.entries(removedRelationships).map(([propName, codes]) => {
 			const def = schema.properties[propName];
 			return {
 				relName: def.relationship,
@@ -80,6 +80,13 @@ const prepareRelationshipDeletion = (nodeType, removedRelationships) => {
 			};
 
 		})
+	parameters.deleteOutgoingRelationships = deleteRelationships.filter(({
+		direction
+	}) => direction === 'outgoing')
+
+	parameters.deleteIncomingRelationships = deleteRelationships.filter(({
+		direction
+	}) => direction === 'incoming')
 
 
 // call apoc.cypher.mapParallel('call apoc.cypher.run("MATCH (p:" + _.type + ")<-[:"+_.relName+"]-(t {code:$code}) RETURN p, t", _) yield value RETURN value', {}, $bits) yield value
@@ -88,13 +95,32 @@ const prepareRelationshipDeletion = (nodeType, removedRelationships) => {
 	return { parameters, queryParts: [stripIndents`
 				WITH node
 				CALL apoc.cypher.mapParallel(
-				'CALL apoc.when(_.direction = "outgoing",
-					"OPTIONAL MATCH ($node)-[relationship:"+_.relName+"]->(related:"+_.type+") WHERE related.code IN $codes DELETE relationship",
-					"OPTIONAL MATCH ($node)<-[relationship:"+_.relName+"]-(related:"+_.type+") WHERE related.code IN $codes DELETE relationship",
-					{codes: _.codes, node: node}
-				) YIELD value RETURN value'
-				, null, $deleteRelationships) YIELD value
+					'OPTIONAL MATCH (node)-[relationship:"+_.relName+"]->(related:"+_.type+") WHERE ID(node) = $nodeId AND related.code IN _.codes DELETE relationship'
+				, {nodeId: ID(node)}, $deleteOutgoingRelationships) YIELD value
+			`, stripIndents`
+				WITH node
+				CALL apoc.cypher.mapParallel(
+				'OPTIONAL MATCH (node)<-[relationship:"+_.relName+"]-(related:"+_.type+") WHERE ID(node) = $nodeId AND related.code IN _.codes DELETE relationship'
+				, {nodeId: ID(node)}, $deleteIncomingRelationships) YIELD value
 			`] };
+
+		// return { parameters, queryParts: [stripIndents`
+		// 		WITH node
+		// 		CALL apoc.cypher.mapParallel(
+		// 		'CALL apoc.cypher.doIt(
+		// 			"OPTIONAL MATCH (node)-[relationship:"+_.relName+"]->(related:"+_.type+") WHERE ID(node) = $nodeId AND related.code IN $codes DELETE relationship",
+		// 			{codes: _.codes, nodeId: ID(node)}
+		// 		) YIELD value RETURN value'
+		// 		, {node: node}, $deleteOutgoingRelationships) YIELD value
+		// 	`, stripIndents`
+		// 		WITH node
+		// 		CALL apoc.cypher.mapParallel(
+		// 		'CALL apoc.cypher.doIt(
+		// 			"OPTIONAL MATCH (node)<-[relationship:"+_.relName+"]-(related:"+_.type+") WHERE ID(node) = $nodeId AND related.code IN $codes DELETE relationship",
+		// 			{codes: _.codes, nodeId: ID(node)}
+		// 		) YIELD value RETURN value'
+		// 		, {node: node}, $deleteIncomingRelationships) YIELD value
+		// 	`] };
 };
 
 module.exports = {
