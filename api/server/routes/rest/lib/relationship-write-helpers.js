@@ -94,14 +94,12 @@ const prepareRelationshipDeletion = (nodeType, removedRelationships) => {
 
 	return { parameters, queryParts: [stripIndents`
 				WITH node
-				CALL apoc.cypher.mapParallel(
-					'OPTIONAL MATCH (node)-[relationship:"+_.relName+"]->(related:"+_.type+") WHERE ID(node) = $nodeId AND related.code IN _.codes DELETE relationship'
-				, {nodeId: ID(node)}, $deleteOutgoingRelationships) YIELD value
+				FOREACH (relDef IN $deleteOutgoingRelationships |
+ 					CALL apoc.cypher.doIt("OPTIONAL MATCH (node)-[relationship:"+relDef.relName+"]->(related:"+relDef.type+") AND related.code IN relDef.codes DELETE relationship") YIELD value)
 			`, stripIndents`
 				WITH node
-				CALL apoc.cypher.mapParallel(
-				'OPTIONAL MATCH (node)<-[relationship:"+_.relName+"]-(related:"+_.type+") WHERE ID(node) = $nodeId AND related.code IN _.codes DELETE relationship'
-				, {nodeId: ID(node)}, $deleteIncomingRelationships) YIELD value
+				FOREACH (relDef IN $deleteIncomingRelationships |
+ 					CALL apoc.cypher.doIt("OPTIONAL MATCH (node)<-[relationship:"+relDef.relName+"]-(related:"+relDef.type+") AND related.code IN relDef.codes DELETE relationship") YIELD value)
 			`] };
 
 		// return { parameters, queryParts: [stripIndents`
