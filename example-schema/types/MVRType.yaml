@@ -1,0 +1,50 @@
+name: MVRType
+description: Description of MVRType.
+moreInformation: |
+    More information for MVRType
+minimumViableRecord:
+    - code
+    - children
+    - someString
+    - someBoolean
+    - someEnum
+    - someMultipleChoice
+    - someInteger
+properties:
+  code:
+    type: Code
+    unique: true
+    canIdentify: true
+    description: Code description.
+    label: Code label
+    pattern: CODE
+  someString:
+    type: Word
+    description: Word description.
+    label: Word label
+    useInSummary: true
+  someBoolean:
+    type: Boolean
+    description: Boolean description.
+    label: Boolean label
+  someEnum:
+    type: AnEnum
+    description: Enum description.
+    label: Enum label
+  someMultipleChoice:
+    type: AnEnum
+    hasMany: true
+    description: Multiple choice description.
+    label: Multiple choice label
+  someInteger:
+    type: Int
+    description: Int description.
+    label: Int label
+  children:
+    relationship: HAS_CHILD
+    type: ChildType
+    description: Children description.
+    label: Children label
+    direction: outgoing
+    hasMany: true
+

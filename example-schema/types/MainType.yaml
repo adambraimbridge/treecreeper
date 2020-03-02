@@ -6,6 +6,7 @@ minimumViableRecord:
     - code
     - children
     - someString
+    - someEnum
 properties:
   code:
     type: Code

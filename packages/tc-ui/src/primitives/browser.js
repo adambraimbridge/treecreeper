@@ -1,7 +1,27 @@
-const Relationship = require('./relationship/browser');
+const Text = require('./text/server');
+const Boolean = require('./boolean/server');
+const Enum = require('./enum/server');
+const MultipleChoice = require('./multiple-choice/server');
+const Number = require('./number/server');
 const LargeText = require('./large-text/browser');
+const Relationship = require('./relationship/browser');
+const Temporal = require('./temporal/server');
+
+const addDefaults = obj => ({
+	hasValue: value => !!value,
+	parser: value => (value === 'null' ? null : value),
+	graphqlFragment: propName => propName,
+	...obj,
+});
 
 module.exports = {
-	Relationship,
-	LargeText,
+	Text: addDefaults(Text),
+	Boolean: addDefaults(Boolean),
+	Enum: addDefaults(Enum),
+	Number: addDefaults(Number),
+	LargeText: addDefaults(LargeText),
+	Temporal: addDefaults(Temporal),
+	Relationship: addDefaults(Relationship),
+	MultipleChoice: addDefaults(MultipleChoice),
 };
+
