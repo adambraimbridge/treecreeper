@@ -69,9 +69,29 @@ const DeleteButton = props =>
 		</form>
 	);
 
+const DecommissionButton = props =>
+	props.isSubset ? null : (
+		<form
+			action={`/${props.type}/${encodeURIComponent(props.code)}/decommission`} // this api route doesn't exist yet
+			className="treecreeper-cta"
+			method="POST"
+		>
+			<button
+				data-button-type="decommission" // dont actually know what this is used for yet
+				className={getButtonClasses(
+					'o-buttons--mono treecreeper-cta--delete', // need a new style probably
+				)}
+				type="submit"
+			>
+				Decommission
+			</button>
+		</form>
+	);
+
 module.exports = {
 	EditButton,
 	SaveButton,
 	CancelButton,
 	DeleteButton,
+	DecommissionButton,
 };

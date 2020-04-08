@@ -6,7 +6,7 @@ const {
 	SectionHeader,
 	MetaProperties,
 } = require('../../lib/components/structure');
-const { EditButton, DeleteButton } = require('../../lib/components/buttons');
+const { EditButton, DeleteButton, DecommissionButton } = require('../../lib/components/buttons');
 
 const Properties = ({ fields, data, assignComponent }) => {
 	const propertyfields = Object.entries(fields);
@@ -43,6 +43,7 @@ const View = props => {
 		error,
 		querystring,
 		assignComponent,
+		Somenewthing,
 		Subheader = () => null,
 	} = props;
 	return (
@@ -80,6 +81,7 @@ const View = props => {
 								/>
 							</div>
 						</div>
+						<Somenewthing {...props} />
 						<Subheader {...props} />
 					</div>
 					<div className="treecreeper-cta-container--sticky">
@@ -89,6 +91,11 @@ const View = props => {
 							querystring={querystring || ''}
 						/>
 						<DeleteButton
+							type={schema.type}
+							code={data.code}
+							querystring={querystring || ''}
+						/>
+						<DecommissionButton
 							type={schema.type}
 							code={data.code}
 							querystring={querystring || ''}

@@ -5,6 +5,7 @@ const getViewHandler = ({
 	getSchemaSubset,
 	handleError,
 	renderPage,
+	Somenewthing,
 	Subheader,
 	assignComponent,
 }) => {
@@ -18,6 +19,7 @@ const getViewHandler = ({
 			data: {
 				...getSchemaSubset(event, type),
 				data,
+				Somenewthing,
 				Subheader,
 				error,
 				assignComponent,

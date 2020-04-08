@@ -3,7 +3,7 @@ const { getEnums, rawData } = require('@financial-times/tc-schema-sdk');
 const { FormError } = require('../../lib/components/messages');
 const { Concept, SectionHeader } = require('../../lib/components/structure');
 const { getValue } = require('../../lib/mappers/get-value');
-const { SaveButton, CancelButton } = require('../../lib/components/buttons');
+const { SaveButton, CancelButton, DecommissionButton } = require('../../lib/components/buttons');
 
 const PropertyInputs = ({ fields, data, type, assignComponent, hasError }) => {
 	const propertyfields = Object.entries(fields);
@@ -98,6 +98,11 @@ const EditForm = props => {
 							code={code}
 						/>
 						<CancelButton
+							querystring={querystring || ''}
+							type={type}
+							code={code}
+						/>
+						<DecommissionButton
 							querystring={querystring || ''}
 							type={type}
 							code={code}

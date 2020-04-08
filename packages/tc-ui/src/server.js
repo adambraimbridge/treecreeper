@@ -16,6 +16,7 @@ const getCMS = ({
 	graphqlApiUrl,
 	clientId,
 	apiHeaders,
+	Somenewthing,
 	Subheader,
 	customComponents,
 	customTypeMappings,
@@ -47,6 +48,7 @@ const getCMS = ({
 	const { handler: viewHandler, render: viewRender } = getViewHandler({
 		getApiClient,
 		getSchemaSubset,
+		Somenewthing,
 		Subheader,
 		handleError,
 		assignComponent,
