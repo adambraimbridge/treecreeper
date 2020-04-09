@@ -1,6 +1,7 @@
 const Text = require('./text/server');
 const Boolean = require('./boolean/server');
 const Enum = require('./enum/server');
+const EnumWithLockOverride = require('./enumWithLockOverride/server');
 const MultipleChoice = require('./multiple-choice/server');
 const Number = require('./number/server');
 const LargeText = require('./large-text/server');
@@ -18,6 +19,7 @@ module.exports = {
 	Text: addDefaults(Text),
 	Boolean: addDefaults(Boolean),
 	Enum: addDefaults(Enum),
+	EnumWithLockOverride: addDefaults(EnumWithLockOverride),
 	Number: addDefaults(Number),
 	LargeText: addDefaults(LargeText),
 	Temporal: addDefaults(Temporal),

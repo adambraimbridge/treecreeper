@@ -29,3 +29,9 @@
 	margin-left: 0;
 	margin-bottom: 0.5rem;
 }
+
+.edit-component-with-lock-override {
+	display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}

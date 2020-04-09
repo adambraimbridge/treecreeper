@@ -2,7 +2,6 @@ const { getEnums } = require('@financial-times/tc-schema-sdk');
 const React = require('react');
 const autolinker = require('autolinker');
 const { WrappedEditComponent } = require('../../lib/components/input-wrapper');
-const { DecommissionButton } = require('../../lib/components/buttons');
 
 const localOnChange = (event, onChange) => {
 	const { value, id, dataset } = event.currentTarget;
@@ -45,9 +44,8 @@ const OptionsInfo = ({ type }) => {
 	);
 };
 
-const EditEnum = props => {
+const EditEnumWithLockOverride = props => {
 	const {
-		type,
 		propertyName,
 		value,
 		options,
@@ -55,45 +53,39 @@ const EditEnum = props => {
 		isNested,
 		parentCode,
 		onChange,
+		overrideButtonText,
+		overrideUrl,
 	} = props;
 	console.log('**** Props in edit enum: ', JSON.stringify(props, null, 2));
-	const hasLockOverrideAction = type === 'SystemLifecycle'; // should be part of schema?
 	const optionsWithDefault = ["Don't know"].concat(options);
 	const name = !isNested ? propertyName : '';
-	const editEnumMeat = (
-		<span className="o-forms-input o-forms-input--select">
-			<select
-				disabled={disabled}
-				id={`id-${propertyName}`}
-				name={name}
-				defaultValue={value || "Don't know"}
-				data-parent-code={parentCode}
-				onChange={
-					!isNested ? null : event => localOnChange(event, onChange)
-				}
-			>
-				{optionsWithDefault.map((option, index) => (
-					<Option option={option} key={index} />
-				))}
-			</select>
-		</span>
+	return (
+		<div>
+			<span className="o-forms-input o-forms-input--select">
+				<select
+					disabled={disabled}
+					id={`id-${propertyName}`}
+					name={name}
+					defaultValue={value || "Don't know"}
+					data-parent-code={parentCode}
+					onChange={
+						!isNested
+							? null
+							: event => localOnChange(event, onChange)
+					}
+				>
+					{optionsWithDefault.map((option, index) => (
+						<Option option={option} key={index} />
+					))}
+				</select>
+			</span>
+			<button>{overrideButtonText}</button>
+		</div>
 	);
-	if (hasLockOverrideAction) {
-		return (
-			<div>
-				{editEnumMeat}
-				<DecommissionButton
-					code={props.parentCode}
-					className="o-buttons o-buttons--secondary o-buttons--small relationship-remove-button"
-				/>
-			</div>
-		);
-	}
-	return editEnumMeat;
 };
 
 module.exports = {
-	name: 'Enum',
+	name: 'EnumWithLockOverride',
 	ViewComponent: ({ value, id }) => (
 		<span id={id} className="o-labels">
 			{value}
@@ -101,7 +93,7 @@ module.exports = {
 	),
 	EditComponent: props => (
 		<WrappedEditComponent
-			Component={EditEnum}
+			Component={EditEnumWithLockOverride}
 			componentType="enum"
 			expandableContent={<OptionsInfo {...props} />}
 			{...props}

@@ -1,6 +1,7 @@
 const React = require('react');
 const autolinker = require('autolinker');
 const { LinkToRecord } = require('./structure');
+const { DecommissionButton } = require('./buttons');
 
 const FieldTitle = ({ label, description, expandableContent, lockedBy }) => (
 	<span className="o-forms-title">
@@ -52,8 +53,14 @@ const FieldTitle = ({ label, description, expandableContent, lockedBy }) => (
 );
 
 const WrappedEditComponent = props => {
+	console.log('****** props in wrapped edit component', props.Component, JSON.stringify(props, null,2));
 	props = { ...props, disabled: !!props.lockedBy };
 	const { Component, propertyName, wrapperTag } = props;
+	// const { hasLockOverride } = props;
+	// let hasLockOverride;
+	// if (propertyName === 'lifecycleStage') {
+	// 	hasLockOverride = true;
+	// }
 	const WrapperTag = wrapperTag || 'label';
 	const htmlFor = WrapperTag === 'label' ? propertyName : '';
 
@@ -66,7 +73,11 @@ const WrappedEditComponent = props => {
 			{...(props.wrapperProps || {})}
 		>
 			<FieldTitle {...props} />
+			{/* Either the decom button goes here in the wrapper, or in the Enum, or we need a new EditEnumWithButton primitive?*/}
 			<Component {...props} />
+			{/* {propertyName === 'lifecycleStage' ? (
+				<DecommissionButton code={props.parentCode} />
+			) : null} */}
 		</WrapperTag>
 	);
 };

@@ -78,9 +78,10 @@ const DecommissionButton = props =>
 		>
 			<button
 				data-button-type="decommission" // dont actually know what this is used for yet
-				className={getButtonClasses(
-					'o-buttons--mono treecreeper-cta--delete', // need a new style probably
-				)}
+				className={props.className || getButtonClasses(
+						'o-buttons--mono treecreeper-cta--delete', // need a new style probably
+					)
+				}
 				type="submit"
 			>
 				Decommission
