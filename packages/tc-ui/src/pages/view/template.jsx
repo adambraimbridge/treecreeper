@@ -29,6 +29,7 @@ const Properties = ({ fields, data, assignComponent }) => {
 				...assignComponent(item),
 				// TODO - find a better way (to not pass assignComponent)
 				assignComponent,
+				systemCode: data.code
 			};
 			return viewModel.label ? (
 				<LabelledPrimitive {...viewModel} />
